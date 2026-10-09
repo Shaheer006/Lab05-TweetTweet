@@ -1,8 +1,6 @@
-/* Copyright (c) 2007-2016 MIT 6.005 course staff, all rights reserved.
- * Redistribution of original or derived work requires permission of course staff.
- */
 package twitter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,7 +25,13 @@ public class Filter {
      *         in the same order as in the input list.
      */
     public static List<Tweet> writtenBy(List<Tweet> tweets, String username) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> result = new ArrayList<>();
+        for (Tweet tweet : tweets) {
+            if (tweet.getAuthor().equalsIgnoreCase(username)) {
+                result.add(tweet);
+            }
+        }
+        return result;
     }
 
     /**
@@ -41,7 +45,15 @@ public class Filter {
      *         in the same order as in the input list.
      */
     public static List<Tweet> inTimespan(List<Tweet> tweets, Timespan timespan) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> result = new ArrayList<>();
+        for (Tweet tweet : tweets) {
+            // a Timespan includes its endpoints
+            if (!tweet.getTimestamp().isBefore(timespan.getStart())
+                    && !tweet.getTimestamp().isAfter(timespan.getEnd())) {
+                result.add(tweet);
+            }
+        }
+        return result;
     }
 
     /**
@@ -52,15 +64,31 @@ public class Filter {
      * @param words
      *            a list of words to search for in the tweets. 
      *            A word is a nonempty sequence of nonspace characters.
-     * @return all and only the tweets in the list such that the tweet text (when 
-     *         represented as a sequence of nonempty words bounded by space characters 
-     *         and the ends of the string) includes *at least one* of the words 
+     * @return all and only the tweets in the list such that the tweet text (when
+     *         represented as a sequence of nonempty words bounded by space characters
+     *         and the ends of the string) includes *at least one* of the words
      *         found in the words list. Word comparison is not case-sensitive,
      *         so "Obama" is the same as "obama".  The returned tweets are in the
      *         same order as in the input list.
      */
     public static List<Tweet> containing(List<Tweet> tweets, List<String> words) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> result = new ArrayList<>();
+        for (Tweet tweet : tweets) {
+            if (hasAnyWord(tweet.getText(), words)) {
+                result.add(tweet);
+            }
+        }
+        return result;
     }
 
+    private static boolean hasAnyWord(String text, List<String> words) {
+        for (String tweetWord : text.split(" ")) {
+            for (String word : words) {
+                if (!tweetWord.isEmpty() && tweetWord.equalsIgnoreCase(word)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

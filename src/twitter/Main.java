@@ -1,57 +1,27 @@
-/* Copyright (c) 2007-2016 MIT 6.005 course staff, all rights reserved.
- * Redistribution of original or derived work requires permission of course staff.
- */
 package twitter;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-/**
- * This is the main program.
- * 
- * You may change this class if you wish, but you don't have to.
- */
 public class Main {
     
-    /**
-     * URL of a server that produces a list of tweets sampled from Twitter
-     * within the last hour. This server may take up to a minute to respond, if
-     * it has to refresh its cached sample of tweets.
-     */
-    public static final URL SAMPLE_SERVER = makeURLAssertWellFormatted("http://courses.csail.mit.edu/6.005/ps1_tweets/tweetPoll.py");
-    
-    private static URL makeURLAssertWellFormatted(String urlString) {
-        try {
-            return new URL(urlString);
-        } catch (MalformedURLException murle) {
-            throw new AssertionError(murle);
-        }
-    }
-    
-    /**
-     * Main method of the program. Fetches a sample of tweets and prints some
-     * facts about it.
-     * 
-     * @param args command-line arguments (not used)
-     */
     public static void main(String[] args) {
         try {
             assert false;
             throw new Error("Always run main and tests with assertions enabled");
         } catch (AssertionError ae) { }
         
-        final List<Tweet> tweets;
-        try {
-            tweets = TweetReader.readTweetsFromWeb(SAMPLE_SERVER);
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
+        // Recreating offline sample tweets since the MIT server is dead
+        final List<Tweet> tweets = Arrays.asList(
+            new Tweet(1, "alyssa", "is it reasonable to talk about rivest so much?", Instant.parse("2016-02-17T10:00:00Z")),
+            new Tweet(2, "bbitdiddle", "rivest talk in 30 minutes #hype", Instant.parse("2016-02-17T11:00:00Z")),
+            new Tweet(3, "alyssa", "@bbitdiddle saving you a seat in 32-123", Instant.parse("2016-02-17T11:20:00Z")),
+            new Tweet(5, "cy_d_fect", "anyone started pset 1 yet? mail me at cy@mit.edu", Instant.parse("2016-02-17T13:40:00Z")),
+            new Tweet(7, "alyssa", "test-first programming actually saved me an hour on the PSET", Instant.parse("2016-02-17T16:30:00Z"))
+        );
         
-        // display some characteristics about the tweets
         System.err.println("fetched " + tweets.size() + " tweets");
         
         final Timespan span = Extract.getTimespan(tweets);
@@ -60,16 +30,14 @@ public class Main {
         final Set<String> mentionedUsers = Extract.getMentionedUsers(tweets);
         System.err.println("covers " + mentionedUsers.size() + " Twitter users");
         
-        // infer the follows graph
-        final Map<String, Set<String>> followsGraph = SocialNetwork.guessFollowsGraph(tweets);
-        System.err.println("follows graph has " + followsGraph.size() + " nodes");
+        System.err.println("\ntweets written by alyssa:");
+        for (Tweet t : Filter.writtenBy(tweets, "alyssa")) {
+            System.err.println(t.toString());
+        }
         
-        // print the top-N influencers
-        final int count = 10;
-        final List<String> influencers = SocialNetwork.influencers(followsGraph);
-        for (String username : influencers.subList(0, Math.min(count, influencers.size()))) {
-            System.out.println(username);
+        System.err.println("\ntweets containing 'rivest' or 'pset':");
+        for (Tweet t : Filter.containing(tweets, Arrays.asList("rivest", "pset"))) {
+            System.err.println(t.toString());
         }
     }
-    
 }

@@ -1,10 +1,12 @@
-/* Copyright (c) 2007-2016 MIT 6.005 course staff, all rights reserved.
- * Redistribution of original or derived work requires permission of course staff.
- */
 package twitter;
 
+import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Extract consists of methods that extract information from a list of tweets.
@@ -24,7 +26,24 @@ public class Extract {
      *         every tweet in the list.
      */
     public static Timespan getTimespan(List<Tweet> tweets) {
-        throw new RuntimeException("not implemented");
+        if (tweets.isEmpty()) {
+            // the spec does not say what to return here, so any timespan is fine
+            return new Timespan(Instant.EPOCH, Instant.EPOCH);
+        }
+        
+        Instant start = tweets.get(0).getTimestamp();
+        Instant end = start;
+        
+        for (Tweet tweet : tweets) {
+            Instant time = tweet.getTimestamp();
+            if (time.isBefore(start)) {
+                start = time;
+            }
+            if (time.isAfter(end)) {
+                end = time;
+            }
+        }
+        return new Timespan(start, end);
     }
 
     /**
@@ -43,7 +62,18 @@ public class Extract {
      *         include a username at most once.
      */
     public static Set<String> getMentionedUsers(List<Tweet> tweets) {
-        throw new RuntimeException("not implemented");
+        Set<String> mentioned = new HashSet<>();
+        for (Tweet tweet : tweets) {
+            Matcher matcher = MENTION.matcher(tweet.getText());
+            while (matcher.find()) {
+                // usernames are case-insensitive, so keep one lowercase copy
+                mentioned.add(matcher.group(1).toLowerCase(Locale.ROOT));
+            }
+        }
+        return mentioned;
     }
 
+    // "@" + username, not preceded by a username character; the greedy +
+    // makes sure it is not followed by one either
+    private static final Pattern MENTION = Pattern.compile("(?<![A-Za-z0-9_-])@([A-Za-z0-9_-]+)");
 }

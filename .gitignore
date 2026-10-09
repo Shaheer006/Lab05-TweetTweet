@@ -1,1 +1,12 @@
-/bin/
+# Eclipse compiled classes and metadata
+bin/
+.metadata/
+.recommenders/
+
+# macOS system files
+.DS_Store
+__MACOSX/
+
+# Unused lab files
+src/twitter/SocialNetwork.java
+test/twitter/SocialNetworkTest.java
